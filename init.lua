@@ -127,6 +127,30 @@ do
   -- Enable break indent
   vim.o.breakindent = true
 
+  -- Indent with 2 spaces
+  vim.o.expandtab = true
+  vim.o.tabstop = 2
+  vim.o.softtabstop = 2
+  vim.o.shiftwidth = 2
+
+  -- Stop the built-in Python/Rust ftplugins from forcing 4-space indents
+  vim.g.python_recommended_style = 0
+  vim.g.rust_recommended_style = 0
+
+  -- Other ftplugins set their own widths, so re-apply 2 after they run.
+  -- Go and Makefiles still use real tabs (gofmt/make require them), just displayed 2 wide.
+  vim.api.nvim_create_autocmd('FileType', {
+    desc = 'Force 2-wide indentation for every filetype',
+    group = vim.api.nvim_create_augroup('two-space-indent', { clear = true }),
+    callback = function(args)
+      local ft = vim.bo[args.buf].filetype
+      vim.bo[args.buf].expandtab = not (ft == 'go' or ft == 'make')
+      vim.bo[args.buf].tabstop = 2
+      vim.bo[args.buf].softtabstop = 2
+      vim.bo[args.buf].shiftwidth = 2
+    end,
+  })
+
   -- Enable undo/redo changes even after closing and reopening a file
   vim.o.undofile = true
 
@@ -187,6 +211,9 @@ do
 
   -- Exit insert mode by typing `jk`
   vim.keymap.set('i', 'jk', '<Esc>', { desc = 'Exit insert mode' })
+
+  -- Toggle comments on the visual selection with <leader>/ (uses Neovim's builtin `gc`)
+  vim.keymap.set('x', '<leader>/', 'gc', { remap = true, desc = 'Toggle comment on selection' })
 
   -- Diagnostic Config & Keymaps
   --  See `:help vim.diagnostic.Opts`
